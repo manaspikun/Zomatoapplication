@@ -7,16 +7,7 @@ import org.json.JSONObject;
  */
 
 public class Resturant {
-    private String name, locality,address,imageUrl,latitude,longitude;
-
-    public Resturant(String name, String address, String locality, String imageUrl, String latitude, String longitude) {
-        this.name = name;
-        this.address = address;
-        this.locality = locality;
-        this.imageUrl = imageUrl;
-        this.latitude = latitude;
-        this.longitude = longitude;
-    }
+    private String name, locality, address, imageUrl, latitude, longitude, url;
 
     public String getName() {
         return name;
@@ -64,5 +55,24 @@ public class Resturant {
 
     public void setLongitude(String longitude) {
         this.longitude = longitude;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public Resturant(String name, String locality, String address, String imageUrl, String latitude, String longitude, String url) {
+
+        this.name = name;
+        this.locality = locality;
+        this.address = address;
+        this.imageUrl = imageUrl;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.url = url;
     }
 }
