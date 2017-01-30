@@ -44,6 +44,7 @@ import java.util.List;
  * A simple {@link Fragment} subclass.
  */
 public class ResturantFragment extends Fragment {
+
     //15 Declare reqiuired variable
     RecyclerView recyclerView;
     ArrayList<Resturant>restaurants;
@@ -52,9 +53,11 @@ public class ResturantFragment extends Fragment {
     LinearLayoutManager linearLayoutManager;
     int pos;
     double curlat,curlong;
-
+    int count = 0;
     EditText et;
-    Button b;
+    Button search;
+    String address;
+
 
     public void showPopup(View v)
     {
@@ -68,13 +71,18 @@ public class ResturantFragment extends Fragment {
                 {
                     case R.id.map :
                         Intent intent = new Intent(getActivity(),MapsActivity.class);
-                        Resturant restaurant = restaurants.get(pos);
-                        intent.putExtra("latitude",restaurant.getLatitude());
-                        intent.putExtra("longitude",restaurant.getLongitude());
-                        intent.putExtra("name",restaurant.getName());
+                        Resturant restaurant1 = restaurants.get(pos);
+                        intent.putExtra("latitude",restaurant1.getLatitude());
+                        intent.putExtra("longitude",restaurant1.getLongitude());
+                        intent.putExtra("name",restaurant1.getName());
                         startActivity(intent);
                         break;
-                    case R.id.web:
+                    case R.id.web :
+                        Resturant restaurant = restaurants.get(pos);
+                        Homeactivity homeActivity = (Homeactivity) getActivity();
+                        String url = restaurant.getUrl();
+                        homeActivity.passData(url);
+
                         break;
                 }
                 return false;
@@ -123,7 +131,7 @@ public class ResturantFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            return null;
+            return "someThing went wrong";
         }
 
         @Override
@@ -136,18 +144,20 @@ public class ResturantFragment extends Fragment {
                     JSONObject k = j.getJSONObject(i);
                     JSONObject p = k.getJSONObject("restaurant");
                     String name = p.getString("name");
-                    String thumb = p.getString("thumb");
+                    String imageUrl = p.getString("thumb");
+                    String url = p.getString("url");
                     JSONObject m = p.getJSONObject("location");
                     String locality = m.getString("locality");
                     String address = m.getString("address");
                     String latitude = m.getString("latitude");
                     String longitude = m.getString("longitude");
 
-                    Resturant rest = new Resturant(name,locality,address,thumb,latitude,longitude);
+                    Resturant rest = new Resturant(name,url,locality,address,imageUrl,latitude,longitude);
                     rest.setName(name);
+                    rest.setUrl(url);
                     rest.setAddress(address);
                     rest.setLocality(locality);
-                    rest.setImageUrl(thumb);
+                    rest.setImageUrl(imageUrl);
                     rest.setLatitude(latitude);
                     rest.setLongitude(longitude);
 
@@ -224,7 +234,8 @@ public class ResturantFragment extends Fragment {
         // Inflate the layout for this fragment
         View v =  inflater.inflate(R.layout.fragment_resturant, container, false);
         et = (EditText) v.findViewById(R.id.edittext);
-        b = (Button) v.findViewById(R.id.button1);
+        search = (Button) v.findViewById(R.id.button1);
+
         recyclerView = (RecyclerView) v.findViewById(R.id.recyclearview1);
         restaurants = new ArrayList<Resturant>();
         myRecyclerViewAdapter = new MyRecyclerViewAdapter();
@@ -233,29 +244,33 @@ public class ResturantFragment extends Fragment {
         //17 establish all link
         recyclerView.setAdapter(myRecyclerViewAdapter);
         recyclerView.setLayoutManager(linearLayoutManager);
-        b.setOnClickListener(new View.OnClickListener() {
+        search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //read address
-                String address = et.getText().toString();// user given address
-                Geocoder geocoder = new Geocoder(getActivity());
-                try {
-                    List<Address> addresses = geocoder.getFromLocationName(address,10);
-                    Address best = addresses.get(0);
-                    curlat = best.getLatitude();
-                    curlong = best.getLongitude();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                count++;
 
-                //19
-                Homeactivity homeActivity = (Homeactivity) getActivity();
-                if (homeActivity.checkInternet())
+                //if (count==1)
                 {
-                    myTask.execute("https://developers.zomato.com/api/v2.1/geocode?lat="+curlat+"&lon="+curlong);
-                }
-                else Toast.makeText(getActivity(), "CHECK INTERNET CONNECTION", Toast.LENGTH_SHORT).show();
-            }
+                    //read address
+                    address = et.getText().toString();// user given address
+                    Geocoder geocoder = new Geocoder(getActivity());
+                    try {
+                        List<Address> addresses = geocoder.getFromLocationName(address, 10);
+                        Address best = addresses.get(0);
+                        curlat = best.getLatitude();
+                        curlong = best.getLongitude();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    //19
+                    Homeactivity homeActivity = (Homeactivity) getActivity();
+                    if (homeActivity.checkInternet())
+                    {
+                        myTask.execute("https://developers.zomato.com/api/v2.1/geocode?lat="+curlat+"&lon="+curlong);
+                    }
+                    else Toast.makeText(getActivity(), "CHECK INTERNET CONNECTION", Toast.LENGTH_SHORT).show();
+                }}
         });
 
         return v;
